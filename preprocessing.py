@@ -1,4 +1,5 @@
 from params import Params as params
+from audio import create_wav
 import numpy as np
 import os
 import re
@@ -80,17 +81,19 @@ def spectrograms_reduction(mel, mag):
     mel = np.pad(mel, [[0, num_paddings], [0, 0]], mode="constant")
     mag = np.pad(mag, [[0, num_paddings], [0, 0]], mode="constant")
 
+    # lowering the sampling rate
+    # the less the network has to predict, the better it will cope
     mel = mel[::params.r, :]
 
     return mel, mag
 
 
 def audio_preprocessing(file_path):
-    mel, mag = get_spectrograms(file_path)
+    mel, mag = wav_to_spectrograms(file_path)
     return os.path.basename(file_path), mel, mag
 
 
-def get_spectrograms(file_path):
+def wav_to_spectrograms(file_path):
     # Parse the wave file and returns normalized mel spectrogram and magnitude spectrogram.
 
     signal, sample_rate = librosa.load(file_path)
@@ -102,21 +105,22 @@ def get_spectrograms(file_path):
     # getting magnitude spectrogram from stft
     mag = np.abs(librosa.stft(y=signal,
                               n_fft=params.n_fft,
-                              hop_length=int(params.sr * params.frame_shift),
-                              win_length=int(params.sr * params.frame_length)))
+                              hop_length=params.hop_length,
+                              win_length=params.win_length))
 
-    # mel spectrogram (n_mels=80)
+    # mel spectrogram
     mel = librosa.feature.melspectrogram(y=signal,
                                          sr=params.sr,
-                                         hop_length=int(params.sr * params.frame_shift))
+                                         n_mels=params.n_mels,
+                                         hop_length=params.hop_length)
 
     # to decibel
     mel = librosa.power_to_db(mel, amin=1e-5)
     mag = librosa.power_to_db(mag, amin=1e-5)
 
-    # normalize (mel = np.clip((mel - 10 + params.max_db) / params.max_db, 1e-8, 1))
-    mel = np.clip((mel + params.max_db) / params.max_db, 1e-8, 1)
-    mag = np.clip((mag + params.max_db) / params.max_db, 1e-8, 1)
+    # normalize
+    mel = np.clip((mel - params.normalization_param_db + params.max_db) / params.max_db, 1e-8, 1)
+    mag = np.clip((mag - params.normalization_param_db + params.max_db) / params.max_db, 1e-8, 1)
 
     # transpose
     mel = mel.T.astype(np.float32)
@@ -143,4 +147,5 @@ def start_preprocessing():
     for each_file in file_paths:
         file_name, mel, mag = audio_preprocessing(each_file)
         save_spectrograms(file_name, mel, mag)
+        create_wav(mag)
         print("File {} processed".format(file_name))
