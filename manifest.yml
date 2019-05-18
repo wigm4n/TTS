@@ -1,0 +1,6 @@
+---
+applications:
+- name: thetistts
+  memory: 2GB
+  disk_quota: 2GB
+  random-route: true

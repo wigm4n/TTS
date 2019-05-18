@@ -1,4 +1,6 @@
-from params import Params as params
+# -*- coding: utf-8 -*-
+
+from unusing.params import Params as params
 import librosa
 import copy
 import numpy as np
@@ -49,4 +51,4 @@ def spectrogram_to_wav(mag):
 
 
 def create_wav(mag):
-    write("test.wav", params.sr, spectrogram_to_wav(mag))
+    write("test_asds.wav", params.sr, spectrogram_to_wav(mag))

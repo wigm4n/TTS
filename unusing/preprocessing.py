@@ -1,5 +1,6 @@
-from params import Params as params
-from audio import create_wav
+# -*- coding: utf-8 -*-
+
+from unusing.params import Params as params
 import numpy as np
 import os
 import re
@@ -144,8 +145,12 @@ def start_preprocessing():
         if not os.path.exists("spectrograms/mags"):
             os.mkdir("spectrograms/mags")
 
+    count = 1
     for each_file in file_paths:
         file_name, mel, mag = audio_preprocessing(each_file)
         save_spectrograms(file_name, mel, mag)
-        create_wav(mag)
-        print("File {} processed".format(file_name))
+        count += 1
+        if count % 100 == 0:
+            print(count)
+        # create_wav(mag)
+        # print("File {} processed".format(file_name))
