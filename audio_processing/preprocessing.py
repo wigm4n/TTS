@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from unusing.params import Params as params
+from audio_processing.params import Params as params
 import numpy as np
 import os
 import re

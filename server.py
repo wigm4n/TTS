@@ -2,14 +2,16 @@
 
 import os
 
-from flask import Flask, send_file
+from flask import Flask, send_file, make_response
 from flask import request
 from flask import jsonify
 import threading
 import time
 import requests
 
-from dictionary import Preprocessing as prp
+from text_processing.dictionary import Preprocessing as prp
+from audio_processing.synthesize import start_process
+from utils import create_json_error_response
 
 app = Flask(__name__)
 
@@ -35,7 +37,7 @@ def start_runner(init_port):
                 if r.status_code == 200:
                     not_started = False
             except:
-                time.sleep(2)
+                time.sleep(1)
 
     thread = threading.Thread(target=start_loop)
     thread.start()
@@ -44,7 +46,7 @@ def start_runner(init_port):
 @app.route('/check')
 def check():
     data = {"status": "OK"}
-    return jsonify(data)
+    return make_response(jsonify(data), 200)
 
 
 @app.route('/get_words', methods=['POST'])
@@ -58,9 +60,29 @@ def get_words():
 @app.route('/get_audio', methods=['POST'])
 def get_audio():
     if request.method == 'POST':
-        project_path = os.path.dirname(__file__)
-        complete_name = project_path + "/samples/19.wav"
-        return send_file(complete_name, attachment_filename='19.wav')
+        flag = 0
+        try:
+            prepared_text = word_processing.process_input_text(request.json.get("input"))
+            if len(prepared_text) < 1:
+                return make_response(jsonify(create_json_error_response("wrong input data, see api description")), 422)
+            flag = 1
+            saved_path, file_name = start_process(request.json.get("input"), prepared_text)
+            file_name_wav = file_name + '.wav'
+            return make_response(send_file(saved_path, attachment_filename=file_name_wav), 200)
+        except:
+            if flag == 0:
+                return make_response(jsonify(create_json_error_response("wrong input data, see api description")), 422)
+            return make_response(jsonify(create_json_error_response("somethings goes wrong, try later")), 500)
+
+
+@app.errorhandler(404)
+def url_path_not_found(e):
+    return make_response(jsonify(create_json_error_response("wrong url path, see api description")), 404)
+
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return make_response(jsonify(create_json_error_response("http method not allowed, see api description")), 405)
 
 
 if __name__ == '__main__':

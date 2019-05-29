@@ -2,7 +2,6 @@
 
 import re
 from num2words import num2words
-from num2text import num2text
 import pymorphy2 as pymorphy2
 
 
@@ -30,7 +29,7 @@ class Preprocessing:
         self.build_map(False)
 
     def build_map(self, flag):
-        filepath = 'stress_forms.txt'
+        filepath = 'static/stress_forms.txt'
         with open(filepath, encoding="utf-8") as fp:
             line = fp.readline()
             cnt = 1
@@ -170,11 +169,11 @@ class Preprocessing:
         words_and_signs = text.split(" ")
         return self.mark_out(words_and_signs)
 
-    def get_number_and_noun(self, numeral, noun):
-        morph = pymorphy2.MorphAnalyzer()
-        word = morph.parse(noun)[0]
-        v1, v2, v3 = word.inflect({'sing', 'nomn'}), word.inflect({'gent'}), word.inflect({'plur', 'gent'})
-        return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), 'm'))
+    # def get_number_and_noun(self, numeral, noun):
+    #     morph = pymorphy2.MorphAnalyzer()
+    #     word = morph.parse(noun)[0]
+    #     v1, v2, v3 = word.inflect({'sing', 'nomn'}), word.inflect({'gent'}), word.inflect({'plur', 'gent'})
+    #     return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), 'm'))
 
     # для числа
     def numbers_2_words(self, number):

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-
+import os
 import re
-import unicodedata
+import datetime
 
 from pydub import AudioSegment
 
-data_set_path = "/Users/ilya_lobanov/Desktop/звуки/all/"
+data_set_path = "sounds/new_all/"
 dest_path = "/Users/ilya_lobanov/Desktop/processed/"
 
 vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ-"
@@ -13,34 +13,31 @@ consonants = "бвгджзйклмнпрстфхцчшщьъ"
 vowels = "аеёиоуыэюя"
 
 
-def de_accent(some_unicode_string):
-    return u''.join(c for c in unicodedata.normalize('NFD', some_unicode_string)
-                    if unicodedata.category(c) != 'Mn')
+def start_process(input_text, input_text_list):
 
+    # [["п", "ри", "ве", "'", "т"], ["к", "то"], ["ты"], ["?"]]
 
-def text_normalize(text):
-    text = de_accent(text)
-    text = text.lower()
-    text = re.sub("[^{}]".format(vocabulary), "", text)
-    return text
+    curr_dir_name = datetime.datetime.now().strftime("%Y-%m-%d")
+    if not os.path.exists("generated_audios/" + curr_dir_name):
+        os.mkdir("generated_audios/" + curr_dir_name)
 
-
-def start_process(input_text):
-    input_text = text_normalize(input_text)
-    allophones = str.split(input_text, "-")
+    dest = os.getcwd() + "/static/sounds/all/"
     phonemes = []
-
-    for i in range(len(allophones)):
-        phoneme = find_phoneme(allophones[i])
-        phoneme = phoneme_pre_processing(phoneme, allophones[i])
-        phonemes.append(phoneme)
+    for i in range(len(input_text_list)):
+        for j in range(len(input_text_list[i])):
+            if input_text_list[i][j][0] in vocabulary:
+                phoneme = find_phoneme(input_text_list[i][j], dest)
+                phoneme = phoneme_pre_processing(phoneme, input_text_list[i][j])
+                phonemes.append(phoneme)
 
     result = append_phonemes(phonemes)
-
-    norm_name = glue_the_text(allophones)
-    save_path = dest_path + norm_name + ".wav"
+    # string.replace("geeks", "Geeks")
+    norm_name = input_text.replace(" ", "_")
+    save_path = os.getcwd() + "/generated_audios/" + curr_dir_name + "/" + norm_name + ".wav"
     result.export(save_path, format="wav")
     print("Аудиозапись сохранена по пути: ", save_path)
+
+    return save_path, norm_name
 
 
 def append_phonemes(phonemes):
@@ -111,8 +108,8 @@ def phoneme_pre_processing(phoneme, phoneme_name, silence_threshold=-50.0, chunk
     return result
 
 
-def find_phoneme(phoneme):
-    return AudioSegment.from_file(data_set_path + phoneme + ".wav")
+def find_phoneme(phoneme, dest):
+    return AudioSegment.from_file(dest + phoneme + ".wav")
 
 
 def glue_the_text(phonemes):

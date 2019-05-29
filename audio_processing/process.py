@@ -2,8 +2,8 @@
 
 import librosa
 import numpy as np
-from unusing.audio import create_wav
-from unusing.params import Params as params
+from audio_processing.audio import create_wav
+from audio_processing.params import Params as params
 
 
 def pr():
