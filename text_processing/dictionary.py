@@ -4,6 +4,8 @@ import re
 from num2words import num2words
 import pymorphy2 as pymorphy2
 
+from ru_rules import apply_the_rules
+
 
 class Preprocessing:
     global_map = {}
@@ -22,6 +24,7 @@ class Preprocessing:
     def process_input_text(self, input_text):
         words = self.preprocess_input_text(input_text)
         res = self.find_stress(words)
+        res = apply_the_rules(res)
         res2 = self.wrapper_syllables(res)
         return res2
 
@@ -145,7 +148,27 @@ class Preprocessing:
 
         if current_chars != "":
             syllables.append(current_chars)
-        return syllables
+
+        is_triple_let = False
+        for j in range(len(syllables)):
+            if len(syllables[j]) > 2:
+                is_triple_let = True
+                break
+
+        new_syll = []
+        if is_triple_let:
+            new_syll = []
+            for j in range(len(syllables)):
+                if len(syllables[j]) > 2:
+                    new_syll.append(syllables[j][:1])
+                    new_syll.append(syllables[j][1:])
+                else:
+                    new_syll.append(syllables[j])
+
+        if len(new_syll) == 0:
+            return syllables
+        else:
+            return new_syll
 
     def wrapper_syllables(self, words):
         res = []

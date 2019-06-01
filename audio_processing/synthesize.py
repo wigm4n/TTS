@@ -5,6 +5,8 @@ import datetime
 
 from pydub import AudioSegment
 
+from audio_processing.audio_processing import work_with_syllables
+
 data_set_path = "sounds/new_all/"
 dest_path = "/Users/ilya_lobanov/Desktop/processed/"
 
@@ -21,24 +23,21 @@ def start_process(input_text, input_text_list):
     if not os.path.exists("generated_audios/" + curr_dir_name):
         os.mkdir("generated_audios/" + curr_dir_name)
 
-    dest = os.getcwd() + "/static/sounds/all/"
-    phonemes = []
-    for i in range(len(input_text_list)):
-        for j in range(len(input_text_list[i])):
-            if input_text_list[i][j][0] in vocabulary:
-                phoneme = find_phoneme(input_text_list[i][j], dest)
-                phoneme = phoneme_pre_processing(phoneme, input_text_list[i][j])
-                phonemes.append(phoneme)
+    result = work_with_syllables(input_text_list)
 
-    result = append_phonemes(phonemes)
-    # string.replace("geeks", "Geeks")
-    norm_name = input_text.replace(" ", "_")
+    norm_name = create_name(input_text)
     save_path = os.getcwd() + "/generated_audios/" + curr_dir_name + "/" + norm_name + ".wav"
     result.export(save_path, format="wav")
     print("Аудиозапись сохранена по пути: ", save_path)
 
     return save_path, norm_name
 
+
+def create_name(input_text):
+    norm_name = input_text.replace(" ", "_")
+    if len(norm_name) > 20:
+        norm_name = norm_name[:40]
+    return norm_name
 
 def append_phonemes(phonemes):
     result = AudioSegment.empty()
