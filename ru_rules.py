@@ -11,8 +11,13 @@ def apply_the_rules(words):
         last_consonant = False
         last_vowel = False
 
+        # ещё
+        if words[i] == "еще":
+            words[i] = "ещё\'"
         # солнце
         words[i] = words[i].replace('лнц', 'нц')
+        # что
+        words[i] = words[i].replace('что', 'што')
         # явства
         words[i] = words[i].replace('вств', 'ств')
         # лестница
@@ -57,6 +62,26 @@ def apply_the_rules(words):
             elif words[i][len(words[i]) - 1] == 'з':
                 words[i] = words[i][:len(words[i]) - 1] + 'с'
 
+        if len(words[i]) > 2:
+            # порог
+            if words[i][len(words[i]) - 2:] == 'гь':
+                words[i] = words[i][:len(words[i]) - 2] + 'кь'
+            # дуб
+            elif words[i][len(words[i]) - 2:] == 'бь':
+                words[i] = words[i][:len(words[i]) - 2] + 'пь'
+            # Крылов
+            elif words[i][len(words[i]) - 2:] == 'вь':
+                words[i] = words[i][:len(words[i]) - 2] + 'фь'
+            # Крылов
+            elif words[i][len(words[i]) - 2:] == 'дь':
+                words[i] = words[i][:len(words[i]) - 2] + 'ть'
+            # Крылов
+            elif words[i][len(words[i]) - 2:] == 'жь':
+                words[i] = words[i][:len(words[i]) - 2] + 'шь'
+            # Крылов
+            elif words[i][len(words[i]) - 2:] == 'зь':
+                words[i] = words[i][:len(words[i]) - 2] + 'сь'
+
         stressed = False
         for j in range(len(words[i])):
             if words[i][j] == '\'':
@@ -65,12 +90,20 @@ def apply_the_rules(words):
 
         if stressed:
             for j in range(len(words[i])):
+                if j == 0 and len(words[i]) > 1 and words[i][j] == 'о':
+                    if words[i][1] in consonants or words[i][1] in vowels:
+                        words[i] = 'а' + words[i][1:]
+
                 curr_letter = words[i][j]
                 if last_consonant and last_vowel and words[i][j] in consonants:
+                    # молоко
                     if words[i][j - 1] == 'о':
                         words[i] = words[i][:j - 1] + 'а' + words[i][j:]
+                    #
                     if words[i][j - 1] == 'е':
-                        words[i] = words[i][:j - 1] + 'и' + words[i][j:]
+                        if len(words[i]) > j + 1:
+                            if words[i][j + 1] != 'ь':
+                                words[i] = words[i][:j - 1] + 'и' + words[i][j:]
                     last_vowel = False
 
                 if curr_letter in consonants:

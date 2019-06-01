@@ -61,7 +61,8 @@ def analyze(syllables_list):
 
     if len(syllables_list) == 1:
         wc = WordContain()
-        wc.dbDiff = 5
+        if not syllables_list[0] == 'ь' and not syllables_list[0] == 'ъ':
+            wc.dbDiff = 5
 
         analyze_list.append(wc)
         return analyze_list
@@ -111,7 +112,12 @@ def analyze(syllables_list):
                 analyze_list.append(wc)
         else:
             wc = WordContain()
-            wc.crossFade = 35 # 300
+            if stressed == 1:
+                if i != 1:
+                    wc.crossFade = 35  # 300
+            else:
+                if i != 0:
+                    wc.crossFade = 35  # 300
             wc.dbDiff = -1
             wc.lenDiff = 1
             wc.isStress = True

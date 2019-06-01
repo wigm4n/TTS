@@ -88,6 +88,7 @@ class Preprocessing:
     def break_into_syllables(self, word):
         last_vowel = False
         last_consonant = False
+        last_softness = False
         syllables = []
         if len(word) < 2:
             syllables.append(word)
@@ -100,6 +101,17 @@ class Preprocessing:
                 current_chars = ""
                 last_vowel = False
                 last_consonant = False
+
+            if word[i] in self.signs_of_softness:
+                if last_softness:
+                    continue
+                last_softness = True
+                if last_consonant:
+                    if current_chars[len(current_chars) - 1] != 'й':
+                        current_chars += word[i]
+                    continue
+                else:
+                    continue
 
             if word[i] in self.consonants:
                 if word[i] in self.signs_of_softness:
@@ -160,8 +172,12 @@ class Preprocessing:
             new_syll = []
             for j in range(len(syllables)):
                 if len(syllables[j]) > 2:
-                    new_syll.append(syllables[j][:1])
-                    new_syll.append(syllables[j][1:])
+                    if syllables[j][0] in self.consonants:
+                        new_syll.append(syllables[j][:2])
+                        new_syll.append(syllables[j][-1:])
+                    else:
+                        new_syll.append(syllables[j][:1])
+                        new_syll.append(syllables[j][1:])
                 else:
                     new_syll.append(syllables[j])
 
