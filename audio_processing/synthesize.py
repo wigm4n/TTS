@@ -7,9 +7,6 @@ from pydub import AudioSegment
 
 from audio_processing.audio_processing import work_with_syllables
 
-data_set_path = "sounds/new_all/"
-dest_path = "/Users/ilya_lobanov/Desktop/processed/"
-
 vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ-"
 consonants = "бвгджзйклмнпрстфхцчшщьъ"
 vowels = "аеёиоуыэюя"
@@ -38,6 +35,7 @@ def create_name(input_text):
     if len(norm_name) > 20:
         norm_name = norm_name[:40]
     return norm_name
+
 
 def append_phonemes(phonemes):
     result = AudioSegment.empty()

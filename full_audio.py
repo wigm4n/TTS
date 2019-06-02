@@ -76,7 +76,14 @@ def analyze(syllables_list):
             analyze_list.append(wc)
 
 
+def some_dbs():
+    # на - с 0,35 по 0,53 => 0.4 по 0.53
+    audio = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/девятнадцатый.wav")
+    print("done")
+
+
 if __name__ == '__main__':
+    some_dbs()
     analyze([])
     # audio = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/великая_война.wav")
     wav = wave.open("/Users/ilya_lobanov/Desktop/великая_война.wav", mode="r")
@@ -100,8 +107,31 @@ if __name__ == '__main__':
 
     audio = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/великая_война.wav")
 
-    audio2 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/new_all/ве.wav")
-    audio3 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/new_all/ли.wav")
+    audio222 = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ча.wav")
+    audio222 = audio222 - 6
+    audio222.export("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ча.wav", format="wav")
+
+    audio22 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/па.wav")
+    audio33 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/л.wav")
+    audio2 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/ку.wav")
+    audio3 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/ка.wav")
+    audio2 = audio2 - 4.2
+    audio3 = audio3 + 1.2
+    audio22 = audio22 - 0.7
+    audio33 = audio33 - 1.3
+    palka = AudioSegment.empty()
+    palka = palka.append(audio22, crossfade=0)
+    palka = palka.append(audio33, crossfade=35)
+    palka = palka.append(audio3, crossfade=35)
+    palka.export("/Users/ilya_lobanov/Desktop/палка.wav", format="wav")
+
+    palky = AudioSegment.empty()
+    palky = palky.append(audio22, crossfade=0)
+    palky = palky.append(audio33, crossfade=35)
+    palky = palky.append(audio2, crossfade=35)
+    palky.export("/Users/ilya_lobanov/Desktop/палку.wav", format="wav")
+
+
     audio4 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/new_all/ка.wav")
     audio5 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/new_all/я.wav")
     sadf = AudioSegment.empty()

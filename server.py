@@ -62,6 +62,7 @@ def get_audio():
     if request.method == 'POST':
         flag = 0
         try:
+            print("files in sounds/all: " + str(len(os.listdir(os.getcwd() + "/static/sounds/all/")) - 1))
             prepared_text = word_processing.process_input_text(request.json.get("input"))
             if len(prepared_text) < 1:
                 return make_response(jsonify(create_json_error_response("wrong input data, see api description")), 422)
@@ -69,10 +70,11 @@ def get_audio():
             saved_path, file_name = start_process(request.json.get("input"), prepared_text)
             file_name_wav = file_name + '.wav'
             return make_response(send_file(saved_path, attachment_filename=file_name_wav), 200)
-        except:
+        except Exception as e:
             if flag == 0:
                 return make_response(jsonify(create_json_error_response("wrong input data, see api description")), 422)
-            return make_response(jsonify(create_json_error_response("somethings goes wrong, try later")), 500)
+            # somethings goes wrong, try later
+            return make_response(jsonify(create_json_error_response(repr(e))), 500)
 
 
 @app.errorhandler(404)

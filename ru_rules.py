@@ -14,6 +14,8 @@ def apply_the_rules(words):
         # ещё
         if words[i] == "еще":
             words[i] = "ещё\'"
+        # синтезатор
+        words[i] = words[i].replace('синтез', 'синтэз')
         # солнце
         words[i] = words[i].replace('лнц', 'нц')
         # что
@@ -39,6 +41,8 @@ def apply_the_rules(words):
         words[i] = words[i].replace('стск', 'ск')
         # счастье
         words[i] = words[i].replace('сч', 'щ')
+        # счастье
+        words[i] = words[i].replace('а\'дцат', 'а\'цат')
         # премудрая
         if len(words[i]) > 3 and words[i][:3] == 'пре' and (words[i][3] in consonants or words[i][3] in vowels):
             words[i] = 'при' + words[i][3:]
@@ -95,21 +99,20 @@ def apply_the_rules(words):
                         words[i] = 'а' + words[i][1:]
 
                 curr_letter = words[i][j]
-                if last_consonant and last_vowel and words[i][j] in consonants:
+                if last_consonant and (words[i][j] in consonants or words[i][j] in vowels):
                     # молоко
                     if words[i][j - 1] == 'о':
                         words[i] = words[i][:j - 1] + 'а' + words[i][j:]
-                    #
-                    if words[i][j - 1] == 'е':
+                    # тысячи
+                    if words[i][j - 1] == 'я':
                         if len(words[i]) > j + 1:
                             if words[i][j + 1] != 'ь':
                                 words[i] = words[i][:j - 1] + 'и' + words[i][j:]
-                    last_vowel = False
 
                 if curr_letter in consonants:
                     last_consonant = True
                     continue
-                if curr_letter in vowels:
-                    last_vowel = True
-                    continue
+        if words[i][len(words[i]) - 1] == 'о':
+            words[i] = words[i][:-1] + 'а'
+
     return words
