@@ -16,10 +16,13 @@ def start_process(input_text, input_text_list):
 
     # [["п", "ри", "ве", "'", "т"], ["к", "то"], ["ты"], ["?"]]
 
+    print("in start_process, input_text: " + str(input_text_list))
     curr_dir_name = datetime.datetime.now().strftime("%Y-%m-%d")
+    print("new dir name: " + curr_dir_name)
     if not os.path.exists("generated_audios/" + curr_dir_name):
+        print("creating dir: " + curr_dir_name)
         os.mkdir("generated_audios/" + curr_dir_name)
-
+    print("dir ok!")
     result = work_with_syllables(input_text_list)
 
     norm_name = create_name(input_text)

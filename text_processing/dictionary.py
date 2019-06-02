@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import os
 import re
 from num2words import num2words
 import pymorphy2 as pymorphy2
+from pydub import AudioSegment
 
 from ru_rules import apply_the_rules
 
@@ -15,6 +16,7 @@ class Preprocessing:
     signs_of_softness = "ьъ"
     vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ1234567890 -,.:;!?#№$%&€"
     sings_for_divide = ".,:;!?№#$€%&"
+    delete_signs = ".?!,;:"
 
     #     -             не выделять, как отдельный элемент
     #     ! ?           эмоциональная окраска речи
@@ -60,6 +62,10 @@ class Preprocessing:
         res = []
         for i in range(len(words)):
             if words[i] not in self.sings_for_divide:
+                if 'ё' in words[i]:
+                    words[i].replace('ё\'', 'ё')
+                    words[i].replace('ё', 'ё\'')
+
                 found = False
                 for k in self.global_map:
                     if not found:
@@ -205,7 +211,25 @@ class Preprocessing:
         text = text.strip()
         text = re.sub("[^{}]".format(self.vocabulary), "", text)
         text = self.replace_digits(text)
-        words_and_signs = text.split(" ")
+
+        new_text = ""
+        prev = text[0]
+        new_text += prev
+        sing_already = False
+        for i in range(1, len(text)):
+            if prev != text[i] and not sing_already:
+                new_text += text[i]
+                prev = text[i]
+                if prev in self.delete_signs:
+                    sing_already = True
+                else:
+                    sing_already = False
+            elif text[i] not in self.delete_signs:
+                new_text += text[i]
+                prev = text[i]
+                sing_already = False
+        words_and_signs = new_text.split(" ")
+
         return self.mark_out(words_and_signs)
 
     # def get_number_and_noun(self, numeral, noun):

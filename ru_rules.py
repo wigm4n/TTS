@@ -9,7 +9,6 @@ vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ
 def apply_the_rules(words):
     for i in range(len(words)):
         last_consonant = False
-        last_vowel = False
 
         # ещё
         if words[i] == "еще":
@@ -41,8 +40,13 @@ def apply_the_rules(words):
         words[i] = words[i].replace('стск', 'ск')
         # счастье
         words[i] = words[i].replace('сч', 'щ')
-        # счастье
+        # девятнадцать
         words[i] = words[i].replace('а\'дцат', 'а\'цат')
+        # претворятся
+        words[i] = words[i].replace('тся', 'ца')
+        # кидаться
+        words[i] = words[i].replace('ться', 'ца')
+
         # премудрая
         if len(words[i]) > 3 and words[i][:3] == 'пре' and (words[i][3] in consonants or words[i][3] in vowels):
             words[i] = 'при' + words[i][3:]
@@ -86,11 +90,37 @@ def apply_the_rules(words):
             elif words[i][len(words[i]) - 2:] == 'зь':
                 words[i] = words[i][:len(words[i]) - 2] + 'сь'
 
+        double_list = ['сс', 'нн', 'мм', 'лл', 'пп', 'зз', 'дд', 'фф', 'тт', 'рр', 'кк']
+        single_list = ['с', 'н', 'м', 'л', 'п', 'з', 'д', 'ф', 'т', 'р', 'к']
+        for k in range(len(double_list)):
+            if double_list[k] in words[i]:
+                index = words[i].find(double_list[k])
+                if len(words[i]) > index + 2:
+                    if words[i][index + 2] in consonants:
+                        words[i] = words[i].replace(double_list[k], single_list[k])
+                if len(words[i]) == index + 2:
+                    words[i] = words[i].replace(double_list[k], single_list[k])
+
         stressed = False
         for j in range(len(words[i])):
             if words[i][j] == '\'':
                 stressed = True
                 break
+
+        if not stressed:
+            vowel_counter = 0
+            vowel_index = 0
+            for l in range(len(words[i])):
+                if words[i][l] in vowels:
+                    vowel_index = l
+                    if vowel_counter > 1:
+                        break
+                    vowel_counter += 1
+            if vowel_counter == 1:
+                if len(words[i]) - 1 > vowel_index:
+                    words[i] = words[i][:vowel_index + 1] + '\'' + words[i][vowel_index + 1:]
+                else:
+                    words[i] += '\''
 
         if stressed:
             for j in range(len(words[i])):

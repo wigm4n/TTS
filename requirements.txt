@@ -2,4 +2,5 @@ num2words
 pymorphy2
 pydub
 requests
+ffmpeg
 Flask

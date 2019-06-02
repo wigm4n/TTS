@@ -107,9 +107,9 @@ if __name__ == '__main__':
 
     audio = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/великая_война.wav")
 
-    audio222 = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ча.wav")
-    audio222 = audio222 - 6
-    audio222.export("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ча.wav", format="wav")
+    audio222 = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/k.wav")
+    audio222 = audio222 - 1
+    audio222.export("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/k.wav", format="wav")
 
     audio22 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/па.wav")
     audio33 = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/л.wav")

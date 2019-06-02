@@ -31,8 +31,8 @@ def detect_and_remove_silence(path, path_to_save, file_name, silence_threshold=-
     result.export(path_to_save + file_name.split('.')[0] + ".wav", format="wav")
 
 def prepo():
-    data_set_path = "/Users/ilya_lobanov/Desktop/звуки/записи"
-    path_to_save = "/Users/ilya_lobanov/Desktop/звуки/обработанные"
+    data_set_path = "/Users/ilya_lobanov/Desktop/sounds/записи"
+    path_to_save = "/Users/ilya_lobanov/Desktop/sounds/обработанные"
 
     file_paths = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т',
                 'у', 'ф', 'х', 'ш', 'щ', 'ц', 'ч', 'э', 'ю', 'я']
@@ -117,3 +117,7 @@ def prepo():
 
     #trimmed_sound.export("/Users/ilya_lobanov/Desktop/res3.wav", format="wav")
     #append()
+
+
+if __name__ == '__main__':
+    prepo()
