@@ -1,4 +1,4 @@
-from text_processing.dictionary import Preprocessing as prp
+from text_processing.text_processing import Preprocessing as prp
 from audio_processing.synthesize import start_process
 
 word_processing = prp()

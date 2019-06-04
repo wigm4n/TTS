@@ -9,7 +9,7 @@ import threading
 import time
 import requests
 
-from text_processing.dictionary import Preprocessing as prp
+from text_processing.text_processing import Preprocessing as prp
 from controller import Controller as controller
 
 app = Flask(__name__)
