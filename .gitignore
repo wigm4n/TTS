@@ -1,4 +1,4 @@
 # TTS
 .idea/*
 venv
-spectrograms
+generated_audios

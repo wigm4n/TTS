@@ -2,12 +2,9 @@
 
 import os
 from pydub import AudioSegment
-from text_processing.dictionary import Preprocessing as prp
 
-vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ-"
-vowels = "аеёиоуыэюя"
-punctuation_marks = ",:;.-"
-word_processing = prp()
+from params import Params as params
+
 
 class WordContain:
     isStress = False
@@ -33,45 +30,110 @@ def speed_change(sound, speed=1.0):
 
 
 def work_with_syllables(input_text_list):
+    dest = os.getcwd() + params.path_to_audios
 
-    dest = os.getcwd() + "/static/sounds/all/"
-
-    one_big_phoneme = AudioSegment.empty()
-    silence = AudioSegment.silent(duration=200)
-    silence_x2 = AudioSegment.silent(duration=400)
+    all_text = AudioSegment.empty()
+    silence = AudioSegment.silent(duration=params.silent_words)
+    silence_x2 = AudioSegment.silent(duration=params.silent_sentenses)
     print("go phoneme progress")
+
+    sentences_list = []
+    curr_sentence = []
     for i in range(len(input_text_list)):
-        begin = 0
-        end = 0
-        analyze_counter = 0
-        analyze_list = analyze(input_text_list[i])
-        if i != 0:
-            one_big_phoneme = one_big_phoneme.append(silence)
-        new_word = AudioSegment.empty()
-        for j in range(len(input_text_list[i])):
-            if input_text_list[i][j][0] in vocabulary:
-                phoneme = find_phoneme(input_text_list[i][j], dest)
-                print("we got it!")
-                if analyze_list[analyze_counter].isStress:
-                    begin = len(new_word)
-                phoneme, crossfade = phoneme_pre_processing(phoneme, analyze_list[analyze_counter])
-                new_word = new_word.append(phoneme, crossfade=crossfade)
-                if analyze_list[analyze_counter].isStress:
-                    end = len(new_word)
-                analyze_counter += 1
+        if input_text_list[i][0] in params.end_marks:
+            curr_sentence.append(input_text_list[i])
+            sentences_list.append(curr_sentence)
+            curr_sentence = []
+        else:
+            curr_sentence.append(input_text_list[i])
+    if len(curr_sentence) != 0:
+        sentences_list.append(curr_sentence)
+    for u in range(len(sentences_list)):
+        begin_q = 0
+        end_q = 0
+        one_sentence = AudioSegment.empty()
+        for i in range(len(sentences_list[u])):
+            begin = 0
+            end = 0
+            analyze_counter = 0
+            analyze_list = analyze(sentences_list[u][i])
+            if i != 0:
+                one_sentence = one_sentence.append(silence)
+            new_word = AudioSegment.empty()
+            is_questionable = is_questionable_word(sentences_list[u][i])
+            if is_questionable:
+                begin_q = len(one_sentence)
+            for j in range(len(sentences_list[u][i])):
+                if sentences_list[u][i][j][0] in params.vocabulary:
+                    phoneme = find_phoneme(sentences_list[u][i][j], dest)
+                    print("we got it!")
+                    if analyze_list[analyze_counter].isStress:
+                        begin = len(new_word)
+                    phoneme, crossfade = phoneme_pre_processing(phoneme, analyze_list[analyze_counter])
+                    new_word = new_word.append(phoneme, crossfade=crossfade)
+                    if analyze_list[analyze_counter].isStress:
+                        end = len(new_word)
+                    analyze_counter += 1
+                else:
+                    if sentences_list[u][i][j][0] in params.punctuation_marks:
+                        one_sentence = one_sentence.append(silence)
+            one_sentence = one_sentence.append(new_word, crossfade=0)
+            if is_questionable:
+                end_q = len(one_sentence)
+            if end != 0:
+                if begin == 0:
+                    new_word = new_word.fade(to_gain=+params.fade_gain_words, start=0, end=end)
+                else:
+                    new_word = new_word.fade(to_gain=+params.fade_gain_words, start=0, end=begin)
+                if end != len(new_word):
+                    new_word = new_word.fade(to_gain=-params.fade_gain_words, start=end, end=len(new_word))
+
+        if sentences_list[u][len(sentences_list[u]) - 1][0] in params.end_marks:
+            if sentences_list[u][len(sentences_list[u]) - 1][0] == "?":
+                if end_q != 0:
+                    one_sentence = process_interrogative_sentence(one_sentence, begin_q, end_q)
+                else:
+                    one_sentence = one_sentence.fade(to_gain=+params.fade_gain_sentenses, start=0, end=len(one_sentence))
+                all_text = all_text.append(one_sentence, crossfade=0)
+            elif sentences_list[u][len(sentences_list[u]) - 1][0] == "!":
+                one_sentence = one_sentence.fade(to_gain=+params.fade_gain_sentenses, start=0, end=len(one_sentence))
+                all_text = all_text.append(one_sentence, crossfade=0)
             else:
-                if input_text_list[i][j][0] in punctuation_marks:
-                    one_big_phoneme = one_big_phoneme.append(silence_x2)
+                all_text = all_text.append(one_sentence, crossfade=0)
+            all_text = all_text.append(silence_x2, crossfade=0)
+        else:
+            all_text = all_text.append(one_sentence, crossfade=0)
 
-        if begin != 0 and end != 0:
-            new_word = new_word.fade(to_gain=+2, start=0, end=begin)
-            if end != len(new_word):
-                new_word = new_word.fade(to_gain=-2, start=end, end=len(new_word))
+    all_text = speed_change(all_text, params.speed)
+    return all_text
 
-        one_big_phoneme = one_big_phoneme.append(new_word, crossfade=0)
 
-    one_big_phoneme = speed_change(one_big_phoneme, 0.97)
-    return one_big_phoneme
+def process_interrogative_sentence(sentence_audio, begin, end):
+    if begin != 0 and end != 0:
+        sentence_audio = sentence_audio.fade(to_gain=+params.fade_gain_sentenses, start=0, end=begin)
+        if end != len(sentence_audio):
+            sentence_audio = sentence_audio.fade(to_gain=-params.fade_gain_sentenses, start=end, end=len(sentence_audio))
+    elif end != 0:
+        sentence_audio = sentence_audio.fade(to_gain=+params.fade_gain_sentenses, start=0, end=end)
+        sentence_audio = sentence_audio.fade(to_gain=-params.fade_gain_sentenses, start=end, end=len(sentence_audio))
+    return sentence_audio
+
+
+def norm_word(syllables_list):
+    word = ""
+    for i in range(len(syllables_list)):
+        if syllables_list[i][0] in params.vocabulary:
+            word += syllables_list[i]
+    return word
+
+
+def is_questionable_word(syllables_list):
+    word = norm_word(syllables_list)
+    questionable_dict = {"как", "где", "зачем", "почему", "кому", "откуда", "куда", "што", "кто"}
+    if word in questionable_dict:
+        return True
+    else:
+        return False
 
 
 def phoneme_pre_processing(phoneme, analyze_info):
@@ -98,18 +160,19 @@ def phoneme_pre_processing(phoneme, analyze_info):
             curr_crossfade = 15
         if phoneme_size > 130:
             cut_off = ((phoneme_size - 130) / 2) / phoneme_size
-            return phoneme[(len(phoneme) * (cut_off - cut_off / 2)):(len(phoneme) * (1 - (cut_off - cut_off / 2)))] - analyze_info.dbDiff, curr_crossfade
+            return phoneme[(len(phoneme) * (cut_off - cut_off / 2)):(
+                    len(phoneme) * (1 - (cut_off - cut_off / 2)))] - analyze_info.dbDiff, curr_crossfade
         else:
             return phoneme - analyze_info.dbDiff, curr_crossfade
 
-    if analyze_info.lenDiff == 0.9:
+    if analyze_info.lenDiff == 0.85:
         if phoneme_size > 200:
             return phoneme[:(len(phoneme) * analyze_info.lenDiff)] - analyze_info.dbDiff, analyze_info.crossFade
         else:
             return phoneme - analyze_info.dbDiff, analyze_info.crossFade
 
     if len(phoneme) * analyze_info.lenDiff < analyze_info.crossFade:
-        analyze_info.crossFade = len(phoneme) * analyze_info.lenDiff * 0.9
+        analyze_info.crossFade = len(phoneme) * analyze_info.lenDiff * 0.88
 
     return phoneme - analyze_info.dbDiff, analyze_info.crossFade
 
@@ -131,7 +194,7 @@ def analyze(syllables_list):
 
     stressed = 0
     for i in range(len(syllables_list)):
-        if syllables_list[i][0] not in vocabulary:
+        if syllables_list[i][0] not in params.vocabulary:
             stressed = 1
             break
 
@@ -141,28 +204,28 @@ def analyze(syllables_list):
         return analyze_list
 
     for i in range(stressed, len(syllables_list)):
-        if syllables_list[i][0] in vocabulary:
+        if syllables_list[i][0] in params.vocabulary:
 
             only_consonants = True
             if i - 1 < 0 or always:
                 always = True
                 for j in range(len(syllables_list[i + factor])):
-                    if syllables_list[i + factor][j] in vowels:
+                    if syllables_list[i + factor][j] in params.vowels:
                         only_consonants = False
                         break
             else:
                 for j in range(len(syllables_list[i - 1 + factor])):
-                    if syllables_list[i - 1 + factor][j] in vowels:
+                    if syllables_list[i - 1 + factor][j] in params.vowels:
                         only_consonants = False
                         break
 
             wc = WordContain()
             if prev_stress:
                 if only_consonants:
-                    wc.lenDiff = 0.5  # 0.5
+                    wc.lenDiff = 0.5
                 else:
-                    wc.lenDiff = 1  # 0.7
-                wc.crossFade = 30  # 75
+                    wc.lenDiff = 1
+                wc.crossFade = params.general_crossFade
                 wc.dbDiff = 4
                 analyze_list.append(wc)
                 prev_stress = False
@@ -171,35 +234,35 @@ def analyze(syllables_list):
                 if only_consonants:
                     if not always:
                         if syllables_list[i - 1] == 'к' or syllables_list[i - 1] == 'п':
-                            wc.lenDiff = 0.3  # 0.5
+                            wc.lenDiff = 0.3
                         elif syllables_list[i - 1] == 'й':
-                            wc.lenDiff = 0.2  # 0.5
+                            wc.lenDiff = 0.2
                         else:
-                            wc.lenDiff = 0.5  # 0.5
+                            wc.lenDiff = 0.5
                     else:
                         if syllables_list[i] == 'к' or syllables_list[i] == 'п':
-                            wc.lenDiff = 0.3  # 0.5
+                            wc.lenDiff = 0.3
                         elif syllables_list[i] == 'й':
-                            wc.lenDiff = 0.2  # 0.5
+                            wc.lenDiff = 0.2
                         else:
-                            wc.lenDiff = 0.5  # 0.5
+                            wc.lenDiff = 0.5
                 else:
-                    wc.lenDiff = 0.9  # 0.9
+                    wc.lenDiff = 0.88
                 if stressed == 1:
                     if i != 1:
-                        wc.crossFade = 30  # 300
+                        wc.crossFade = params.general_crossFade
                 else:
                     if i != 0:
-                        wc.crossFade = 30  # 300
+                        wc.crossFade = params.general_crossFade
                 analyze_list.append(wc)
         else:
             wc = WordContain()
             if stressed == 1:
                 if i != 1:
-                    wc.crossFade = 30  # 300
+                    wc.crossFade = params.general_crossFade
             else:
                 if i != 0:
-                    wc.crossFade = 30  # 300
+                    wc.crossFade = params.general_crossFade
             wc.dbDiff = -1
             wc.lenDiff = 1
             wc.isStress = True

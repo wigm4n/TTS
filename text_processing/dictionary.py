@@ -1,22 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
 import re
 from num2words import num2words
 import pymorphy2 as pymorphy2
-from pydub import AudioSegment
 
-from ru_rules import apply_the_rules
+from params import Params as params
+
+from text_processing.ru_rules import apply_the_rules
 
 
 class Preprocessing:
     global_map = {}
     global_stressed_map = {}
-    vowels = "аеёиоуыэюя"
-    consonants = "бвгджзйклмнпрстфхцчшщьъ"
-    signs_of_softness = "ьъ"
-    vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ1234567890 -,.:;!?#№$%&€"
-    sings_for_divide = ".,:;!?№#$€%&"
-    delete_signs = ".?!,;:"
 
     #     -             не выделять, как отдельный элемент
     #     ! ?           эмоциональная окраска речи
@@ -61,7 +55,7 @@ class Preprocessing:
     def find_stress(self, words):
         res = []
         for i in range(len(words)):
-            if words[i] not in self.sings_for_divide:
+            if words[i] not in params.sings_for_divide:
                 if 'ё' in words[i]:
                     words[i].replace('ё\'', 'ё')
                     words[i].replace('ё', 'ё\'')
@@ -82,20 +76,15 @@ class Preprocessing:
                 res.append(words[i])
         return res
 
-    # обезьяна
-    # облепиха
-    # молоко
-    # маалокс
-
-    # осколок
-    # особняк
-    # аутист
-    # трактор
     def break_into_syllables(self, word):
+        syllables = []
+        exceptions = {"где\'": "где"}
+        if word in exceptions:
+            syllables.append(exceptions[word])
+            return syllables
         last_vowel = False
         last_consonant = False
         last_softness = False
-        syllables = []
         if len(word) < 2:
             syllables.append(word)
             return syllables
@@ -108,7 +97,7 @@ class Preprocessing:
                 last_vowel = False
                 last_consonant = False
 
-            if word[i] in self.signs_of_softness:
+            if word[i] in params.signs_of_softness:
                 if last_softness:
                     continue
                 last_softness = True
@@ -119,8 +108,8 @@ class Preprocessing:
                 else:
                     continue
 
-            if word[i] in self.consonants:
-                if word[i] in self.signs_of_softness:
+            if word[i] in params.consonants:
+                if word[i] in params.signs_of_softness:
                     current_chars += word[i]
                     syllables.append(current_chars)
                     current_chars = ""
@@ -134,10 +123,10 @@ class Preprocessing:
                     last_consonant = True
                     current_chars += word[i]
 
-            if word[i] in self.vowels:
+            if word[i] in params.vowels:
                 if last_vowel and last_consonant:
                     if self.is_vowel_first(current_chars):
-                        if word[i] in self.consonants:
+                        if word[i] in params.consonants:
                             syllables.append(current_chars)
                             current_chars = word[i]
                             last_vowel = False
@@ -147,7 +136,7 @@ class Preprocessing:
                             current_chars = current_chars[1:]
                             current_chars += word[i]
                     else:
-                        if word[i] in self.consonants:
+                        if word[i] in params.consonants:
                             syllables.append(current_chars)
                             current_chars = word[i]
                             last_vowel = False
@@ -178,7 +167,7 @@ class Preprocessing:
             new_syll = []
             for j in range(len(syllables)):
                 if len(syllables[j]) > 2:
-                    if syllables[j][0] in self.consonants:
+                    if syllables[j][0] in params.consonants:
                         new_syll.append(syllables[j][:2])
                         new_syll.append(syllables[j][-1:])
                     else:
@@ -199,17 +188,91 @@ class Preprocessing:
         return res
 
     def is_vowel_first(self, syllable):
-        if syllable[0] in self.vowels:
+        if syllable[0] in params.vowels:
             return True
         else:
             return False
 
+    def highlight_abbreviation(self, text):
+        prev_capital = False
+        prev_space = False
+        abbreviation = ""
+        list_abbreviations = []
+        for i in range(len(text)):
+            if text[i] == " ":
+                if len(abbreviation) > 1:
+                    list_abbreviations.append(abbreviation)
+                abbreviation = ""
+                prev_space = True
+                prev_capital = False
+                continue
+            if text[i] in params.capitals:
+                if prev_space or i == 0:
+                    abbreviation += text[i]
+                    prev_capital = True
+                    prev_space = False
+                elif prev_capital:
+                    abbreviation += text[i]
+            elif len(abbreviation) > 1:
+                list_abbreviations.append(abbreviation)
+                abbreviation = ""
+                prev_capital = False
+            else:
+                abbreviation = ""
+                prev_capital = False
+
+        if len(abbreviation) > 1:
+            list_abbreviations.append(abbreviation)
+
+        abbreviation_dict = {"Ц": "цэ",
+                             "К": "кэ",
+                             "Н": "эн",
+                             "Г": "гэ",
+                             "Ш": "шэ",
+                             "Щ": "щэ",
+                             "З": "зэ",
+                             "Ф": "фэ",
+                             "В": "вэ",
+                             "П": "пэ",
+                             "Р": "эр",
+                             "Л": "лэ",
+                             "Д": "дэ",
+                             "Ж": "жэ",
+                             "Ч": "че",
+                             "С": "эс",
+                             "М": "эм",
+                             "Т": "тэ",
+                             "Б": "бе"}
+
+        new_list = []
+        for i in range(len(list_abbreviations)):
+            already_done = False
+            curr_abb = list_abbreviations[i]
+            if len(curr_abb) > 2:
+                for k in range(len(curr_abb)):
+                    if curr_abb.lower()[k] in params.vowels:
+                        new_list.append(curr_abb.lower())
+                        already_done = True
+                        break
+
+            if not already_done:
+                curr_abbreviations = ""
+                for j in range(len(list_abbreviations[i])):
+                    if list_abbreviations[i][j] in abbreviation_dict:
+                        curr_abbreviations += abbreviation_dict[list_abbreviations[i][j]]
+                    else:
+                        curr_abbreviations += list_abbreviations[i][j]
+                text = text.replace(curr_abb, curr_abbreviations)
+                new_list.append(curr_abbreviations)
+        return text
+
     def preprocess_input_text(self, text):
         text = text.strip()
+        text = self.highlight_abbreviation(text)
         text = text.lower()
         text = self.text_num_split(text)
         text = text.strip()
-        text = re.sub("[^{}]".format(self.vocabulary), "", text)
+        text = re.sub("[^{}]".format(params.vocabulary), "", text)
         text = self.replace_digits(text)
 
         new_text = ""
@@ -220,11 +283,11 @@ class Preprocessing:
             if prev != text[i] and not sing_already:
                 new_text += text[i]
                 prev = text[i]
-                if prev in self.delete_signs:
+                if prev in params.delete_signs:
                     sing_already = True
                 else:
                     sing_already = False
-            elif text[i] not in self.delete_signs:
+            elif text[i] not in params.delete_signs:
                 new_text += text[i]
                 prev = text[i]
                 sing_already = False
@@ -232,21 +295,9 @@ class Preprocessing:
 
         return self.mark_out(words_and_signs)
 
-    # def get_number_and_noun(self, numeral, noun):
-    #     morph = pymorphy2.MorphAnalyzer()
-    #     word = morph.parse(noun)[0]
-    #     v1, v2, v3 = word.inflect({'sing', 'nomn'}), word.inflect({'gent'}), word.inflect({'plur', 'gent'})
-    #     return num2text(num=numeral, main_units=((v1.word, v2.word, v3.word), 'm'))
-
     # для числа
     def numbers_2_words(self, number):
         return num2words(number, lang='ru')
-
-    def define_part_of_speech(self, word_parse):
-        parts_of_speech = {}
-        for i in range(len(word_parse.lexeme)):
-            parts_of_speech[word_parse.lexeme[i].tag.POS] = 1
-        return parts_of_speech
 
     def p_has_sing_and_plur(self, p):
         word = p.word
@@ -307,9 +358,6 @@ class Preprocessing:
         res = []
         res_string = ""
         need_change = False
-        # if next_word == "года" and len(words) < 2:
-        #     is_numr = True
-        #     case = "nomn"
         if is_numr:
             need_change = False
         else:
@@ -325,7 +373,6 @@ class Preprocessing:
                 if i == len(words) - 1:
                     is_numr = False
             word_parse = morph.parse(words[i])[0]
-            dict_s = self.define_part_of_speech(word_parse)
             try:
                 try:
                     if is_numr:
@@ -355,7 +402,8 @@ class Preprocessing:
                 continue
             if words_and_digits[i][0].isdigit():
                 if i < len(words_and_digits) - 1:
-                    words_and_digits[i] = self.numbers_2_words_case_matched(words_and_digits[i], words_and_digits[i + 1])
+                    words_and_digits[i] = self.numbers_2_words_case_matched(words_and_digits[i],
+                                                                            words_and_digits[i + 1])
                 else:
                     words_and_digits[i] = self.numbers_2_words(words_and_digits[i])
         res = ""
@@ -399,14 +447,13 @@ class Preprocessing:
     def mark_out(self, words_and_signs):
         res_objects = []
         temp_words = ""
-        # [ привет, ]  [ как ] [ дела? ]
         for i in range(len(words_and_signs)):
             if temp_words != "":
                 res_objects.append(temp_words)
             temp_words = ""
             for j in range(len(words_and_signs[i])):
                 current_char = words_and_signs[i][j]
-                if current_char in self.sings_for_divide:
+                if current_char in params.sings_for_divide:
                     if temp_words != "":
                         res_objects.append(temp_words)
                         temp_words = ""

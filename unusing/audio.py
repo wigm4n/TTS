@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from audio_processing.params import Params as params
+from params import Params as params
 import librosa
 import copy
 import numpy as np
@@ -52,3 +52,28 @@ def spectrogram_to_wav(mag):
 
 def create_wav(mag):
     write("test_asds.wav", params.sr, spectrogram_to_wav(mag))
+
+
+def pr():
+    file_path = "/Users/ilya_lobanov/Desktop/ko.wav"
+    sig, sample_rate = librosa.load(file_path)
+    sig, _ = librosa.effects.trim(sig)
+    sig = np.append(sig[0], sig[1:] - 0.97 * sig[:-1])
+
+    mag = np.abs(librosa.stft(y=sig,
+                                  n_fft=params.n_fft,
+                                  hop_length=params.hop_length,
+                                  win_length=params.win_length))
+    mag = librosa.power_to_db(mag, amin=1e-5)
+    mag = np.clip((mag - params.normalization_param_db + params.max_db) / params.max_db, 1e-8, 1)
+    mag = mag.T.astype(np.float32)
+
+    mag_size = mag.shape[0]
+    if mag_size % params.r != 0:
+        num_paddings = params.r - (mag_size % params.r)
+    else:
+        num_paddings = 0
+    mag = np.pad(mag, [[0, num_paddings], [0, 0]], mode="constant")
+
+    create_wav(mag)
+

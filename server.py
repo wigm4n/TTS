@@ -10,8 +10,7 @@ import time
 import requests
 
 from text_processing.dictionary import Preprocessing as prp
-from audio_processing.synthesize import start_process
-from utils import create_json_error_response
+from controller import Controller as controller
 
 app = Flask(__name__)
 
@@ -43,18 +42,14 @@ def start_runner(init_port):
     thread.start()
 
 
+def create_json_error_response(message):
+    return {"status": "ERROR", "description": message}
+
+
 @app.route('/check')
 def check():
     data = {"status": "OK"}
     return make_response(jsonify(data), 200)
-
-
-@app.route('/get_words', methods=['POST'])
-def get_words():
-    if request.method == 'POST':
-        prepared_text = word_processing.process_input_text(request.json.get("input"))
-        data = {"text": str(prepared_text)}
-        return jsonify(data)
 
 
 @app.route('/get_audio', methods=['POST'])
@@ -63,11 +58,11 @@ def get_audio():
         flag = 0
         try:
             print("files in sounds/all: " + str(len(os.listdir(os.getcwd() + "/static/sounds/all/")) - 1))
-            prepared_text = word_processing.process_input_text(request.json.get("input"))
+            prepared_text = controller.process_text(request.json.get("input"))
             if len(prepared_text) < 1:
                 return make_response(jsonify(create_json_error_response("wrong input data, see api description")), 422)
             flag = 1
-            saved_path, file_name = start_process(request.json.get("input"), prepared_text)
+            saved_path, file_name = controller.process_audio(request.json.get("input"), prepared_text)
             file_name_wav = file_name + '.wav'
             return make_response(send_file(saved_path, attachment_filename=file_name_wav), 200)
         except Exception as e:

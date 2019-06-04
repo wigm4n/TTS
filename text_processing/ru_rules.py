@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-vowels = "аеёиоуыэюя"
-consonants = "бвгджзйклмнпрстфхцчшщьъ"
-signs_of_softness = "ьъ"
-vocabulary = "аеёиоуыэюябвгджзйклмнпрстфхцчшщьъ1234567890 -,.:;!?#№$%&€"
+from params import Params as params
 
 
 def apply_the_rules(words):
@@ -13,6 +10,8 @@ def apply_the_rules(words):
         # ещё
         if words[i] == "еще":
             words[i] = "ещё\'"
+        if words[i] == "того\'":
+            words[i] = "тово\'"
         # синтезатор
         words[i] = words[i].replace('синтез', 'синтэз')
         # солнце
@@ -48,7 +47,8 @@ def apply_the_rules(words):
         words[i] = words[i].replace('ться', 'ца')
 
         # премудрая
-        if len(words[i]) > 3 and words[i][:3] == 'пре' and (words[i][3] in consonants or words[i][3] in vowels):
+        if len(words[i]) > 3 and words[i][:3] == 'пре' and (
+                words[i][3] in params.consonants or words[i][3] in params.vowels):
             words[i] = 'при' + words[i][3:]
         if len(words[i]) > 1:
             # порог
@@ -96,7 +96,7 @@ def apply_the_rules(words):
             if double_list[k] in words[i]:
                 index = words[i].find(double_list[k])
                 if len(words[i]) > index + 2:
-                    if words[i][index + 2] in consonants:
+                    if words[i][index + 2] in params.consonants:
                         words[i] = words[i].replace(double_list[k], single_list[k])
                 if len(words[i]) == index + 2:
                     words[i] = words[i].replace(double_list[k], single_list[k])
@@ -111,7 +111,7 @@ def apply_the_rules(words):
             vowel_counter = 0
             vowel_index = 0
             for l in range(len(words[i])):
-                if words[i][l] in vowels:
+                if words[i][l] in params.vowels:
                     vowel_index = l
                     if vowel_counter > 1:
                         break
@@ -125,21 +125,22 @@ def apply_the_rules(words):
         if stressed:
             for j in range(len(words[i])):
                 if j == 0 and len(words[i]) > 1 and words[i][j] == 'о':
-                    if words[i][1] in consonants or words[i][1] in vowels:
+                    if words[i][1] in params.consonants or words[i][1] in params.vowels:
                         words[i] = 'а' + words[i][1:]
 
                 curr_letter = words[i][j]
-                if last_consonant and (words[i][j] in consonants or words[i][j] in vowels):
+                if last_consonant and (words[i][j] in params.consonants or words[i][j] in params.vowels):
                     # молоко
                     if words[i][j - 1] == 'о':
                         words[i] = words[i][:j - 1] + 'а' + words[i][j:]
                     # тысячи
-                    if words[i][j - 1] == 'я':
-                        if len(words[i]) > j + 1:
-                            if words[i][j + 1] != 'ь':
-                                words[i] = words[i][:j - 1] + 'и' + words[i][j:]
+                    if words[i][j] != 'м':
+                        if words[i][j - 1] == 'я':
+                            if len(words[i]) > j + 1:
+                                if words[i][j + 1] != 'ь':
+                                    words[i] = words[i][:j - 1] + 'и' + words[i][j:]
 
-                if curr_letter in consonants:
+                if curr_letter in params.consonants:
                     last_consonant = True
                     continue
         if words[i][len(words[i]) - 1] == 'о':

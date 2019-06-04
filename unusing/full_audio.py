@@ -1,20 +1,12 @@
+# -*- coding: utf-8 -*-
 import os
 
 from pydub import AudioSegment
 
 
-def test_fade_in_out():
-    audio = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/generated_audios/2019-06-02/что_делать.wav")
-
-    audio = audio.fade_out(1000)
-
-
-    audio.export("/Users/ilya_lobanov/Desktop/kkk/fade_test.wav", format="wav")
-
-
 def do_it_twice():
-    audio = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ба.wav")
-    audio.export("/Users/ilya_lobanov/Desktop/kkk/ба.wav", format="wav")
+    audio = AudioSegment.from_file("/Users/ilya_lobanov/Desktop/sounds/super_new_all/ню.wav")
+    audio.export("/Users/ilya_lobanov/Desktop/sounds/super_new_all/ню.wav", format="wav")
 
 
 def do_it():
@@ -34,5 +26,11 @@ def do_it():
     print("done")
 
 
+def change_db():
+    audio222 = AudioSegment.from_file("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ле.wav")
+    audio222 = audio222 - 1
+    audio222.export("/Users/ilya_lobanov/PycharmProjects/thesis_tts/static/sounds/all/ле.wav", format="wav")
+
+
 if __name__ == '__main__':
-    test_fade_in_out()
+    change_db()
