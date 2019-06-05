@@ -28,8 +28,7 @@ class Preprocessing:
         self.build_map(False)
 
     def build_map(self, flag):
-        filepath = 'static/stress_forms.txt'
-        with open(filepath, encoding="utf-8") as fp:
+        with open(params.path_to_stress_dict, encoding="utf-8") as fp:
             line = fp.readline()
             cnt = 1
             while line:
@@ -106,6 +105,7 @@ class Preprocessing:
                         current_chars += word[i]
                     continue
                 else:
+                    current_chars += word[i]
                     continue
 
             if word[i] in params.consonants:
@@ -184,7 +184,9 @@ class Preprocessing:
     def wrapper_syllables(self, words):
         res = []
         for i in range(len(words)):
-            res.append(self.break_into_syllables(words[i]))
+            syllables = self.break_into_syllables(words[i])
+            if len(syllables) != 0:
+                res.append(self.break_into_syllables(words[i]))
         return res
 
     def is_vowel_first(self, syllable):
@@ -266,13 +268,30 @@ class Preprocessing:
                 new_list.append(curr_abbreviations)
         return text
 
+    def one_more_clean(self, text):
+        text = text.replace("(", "")
+        text = text.replace(")", "")
+        text = text.replace("*", "")
+        text = text.replace("\"", "")
+        text = text.replace("'", "")
+        text = text.replace("^", "")
+        text = text.replace("[", "")
+        text = text.replace("]", "")
+        text = text.replace("/", "")
+        text = text.replace("|", "")
+        text = text.replace("\\", "")
+        text = text.replace("{", "")
+        text = text.replace("}", "")
+        return text
+
     def preprocess_input_text(self, text):
         text = text.strip()
         text = self.highlight_abbreviation(text)
         text = text.lower()
         text = self.text_num_split(text)
         text = text.strip()
-        text = re.sub("[^{}]".format(params.vocabulary), "", text)
+        text = re.sub("[^{}]".format(params.vocabulary_text), "", text)
+        text = self.one_more_clean(text)
         text = self.replace_digits(text)
 
         new_text = ""

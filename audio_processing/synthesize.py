@@ -19,8 +19,12 @@ def start_process(input_text, input_text_list):
     result = work_with_syllables(input_text_list)
 
     norm_name = create_name(input_text)
-    save_path = os.getcwd() + "/generated_audios/" + curr_dir_name + "/" + norm_name + ".wav"
-    result.export(save_path, format="wav")
+    try:
+        save_path = os.getcwd() + "/generated_audios/" + curr_dir_name + "/" + norm_name + ".wav"
+        result.export(save_path, format="wav")
+    except:
+        save_path = os.getcwd() + "/generated_audios/" + curr_dir_name + "/1.wav"
+        result.export(save_path, format="wav")
     print("Аудиозапись сохранена по пути: ", save_path)
 
     return save_path, norm_name

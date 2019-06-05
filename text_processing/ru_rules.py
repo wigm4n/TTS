@@ -12,8 +12,45 @@ def apply_the_rules(words):
             words[i] = "ещё\'"
         if words[i] == "того\'":
             words[i] = "тово\'"
+
+        # имена
+        words[i] = words[i].replace('жукова', 'жу\'кова')
+        words[i] = words[i].replace('галина', 'гали\'на')
+        words[i] = words[i].replace('николаевна', 'никола\'евна')
+        words[i] = words[i].replace('ульянов', 'улья\'нов')
+        words[i] = words[i].replace('михаил', 'михаи\'л')
+        words[i] = words[i].replace('васильевич', 'васи\'льевич')
+        # Сошников Дмитрий Валерьевич
+        words[i] = words[i].replace('сошнико\'в', 'со\'шников')
+        words[i] = words[i].replace('дмитрий', 'дми\'трий')
+        words[i] = words[i].replace('валерьевич', 'вале\'рьевич')
+        # Ду́дарев Виктор Анатольевич
+        words[i] = words[i].replace('дударев', 'ду\'дарев')
+        words[i] = words[i].replace('виктор', 'ви\'ктор')
+        words[i] = words[i].replace('анатольевич', 'анато\'льевич')
+        # Ахметсафина Римма Закиевна
+        words[i] = words[i].replace('ахметсафина', 'ахметса\'фина')
+        words[i] = words[i].replace('римма', 'ри\'мма')
+        words[i] = words[i].replace('закиевна', 'заки\'евна')
+        # Черткова Елена Александровна
+        words[i] = words[i].replace('черткова', 'чертко\'ва')
+        words[i] = words[i].replace('елена', 'еле\'на')
+        words[i] = words[i].replace('александровна', 'алекса\'ндровна')
+        # Береснева Екатерина Николаевна
+        words[i] = words[i].replace('береснева', 'бе\'реснева')
+        words[i] = words[i].replace('екатерина', 'екатери\'на')
+        words[i] = words[i].replace('николаевна', 'никола\'евна')
+        words[i] = words[i].replace('лобановым', 'лоба\'новым')
+        words[i] = words[i].replace('ильёй', 'ильё\'й')
+        # €
+        words[i] = words[i].replace('€', 'е\'вро')
         # синтезатор
         words[i] = words[i].replace('синтез', 'синтэз')
+        words[i] = words[i].replace('си\'нтез', 'си\'нтэз')
+        words[i] = words[i].replace('тест', 'тэст')
+        words[i] = words[i].replace('те\'ст', 'тэ\'ст')
+        # язык
+        words[i] = words[i].replace('языке\'', 'йизыке\'')
         # солнце
         words[i] = words[i].replace('лнц', 'нц')
         # что
@@ -143,7 +180,7 @@ def apply_the_rules(words):
                 if curr_letter in params.consonants:
                     last_consonant = True
                     continue
-        if words[i][len(words[i]) - 1] == 'о':
-            words[i] = words[i][:-1] + 'а'
+            if words[i][len(words[i]) - 1] == 'о':
+                words[i] = words[i][:-1] + 'а'
 
     return words
